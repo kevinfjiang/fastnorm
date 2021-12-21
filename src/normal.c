@@ -76,7 +76,7 @@ float ICUM(float P){
  * by Nvidia demonstrations of CUDA. All algorithms above 
  * perform better, with some up to 2x and 2.5x faster than this.
  */ 
-static float CND(float d) { //Standard algo by Nvidia
+float CND(float d) { //Standard algo by Nvidia
     const double A1 = 0.31938153;
     const double A2 = -0.356563782;
     const double A3 = 1.781477937;
@@ -94,4 +94,3 @@ static float CND(float d) { //Standard algo by Nvidia
 
     return cnd;
 }
-

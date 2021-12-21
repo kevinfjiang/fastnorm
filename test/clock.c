@@ -1,7 +1,7 @@
 #include <time.h>
 #include <stdio.h>
 
-#include "normal.c"
+#include "../src/normal.h"
 #ifdef COUNT
     #define CT COUNT
 #else
@@ -32,7 +32,7 @@ void time_func(float (*foo)(float)){
 int main(){
     time_func(&CUM);
     time_func(&FastCUM);
-    time_func(&CND);
+    // time_func(&CND);
     time_func(&ICUM);
     time_func(&FastICUM);
 }

@@ -13,6 +13,7 @@ For a less serious tone, I was bored and I watched the famous Quake 3 inverse sq
 ## TODO:
 1. Speedup the inverse CDF algorithm, namely a 1 transformation solution
 2. Look into other implementations and other basic functions to speed up.
+3. Add makefile to `test/` directory
 
 ## **Citations**
 1. https://github.com/tpn/cuda-samples/blob/master/v9.0/4_Finance/BlackScholes/BlackScholes_gold.cpp   `Gotta go fast`
