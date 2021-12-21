@@ -17,7 +17,7 @@ For a less serious tone, I was bored and I watched the famous Quake 3 inverse sq
 
 ## **Citations**
 1. https://github.com/tpn/cuda-samples/blob/master/v9.0/4_Finance/BlackScholes/BlackScholes_gold.cpp   `Gotta go fast`
-2. Richards, Winston & Robin, s & Ashok, Sahai & Acharya, Milu. (2010). An Efficient Polynomial Approximation to the Normal Distribution Function and Its Inverse Function. Journal of Mathematics Research. 2. 10.5539/jmr.v2n4p47. `Algorithm [2] (2.7and inverse algorithm 4 (2.17)`
+2. Richards, Winston & Robin, s & Ashok, Sahai & Acharya, Milu. (2010). An Efficient Polynomial Approximation to the Normal Distribution Function and Its Inverse Function. Journal of Mathematics Research. 2. 10.5539/jmr.v2n4p47. `Algorithm [2] (2.7) and Inverse Algorithm [4] (2.17)`
 3. https://en.wikipedia.org/wiki/Fast_inverse_square_root 
  `bithack inspiration and constant 0x3F7A3BEAL derived here`
 5. https://github.com/ekmett/approximate/blob/master/cbits/fast.c `float logf_fast_ub(float a), grabbed constants from here for fast log approximation`
