@@ -11,7 +11,7 @@
 #ifdef INPUT
     #define INP INPUT
 #else
-    #define INP .8
+    #define INP .6
 #endif //COUNT
 
 
@@ -33,8 +33,9 @@ void time_func(double (*foo)(double)){
 
 int main(){
     printf("MY algo \n");
-    time_func(&ICUM);
-    time_func(&FastICUM);
+    time_func(&CUM);
+    time_func(&FastCUM);
+    time_func(&AccCUM);
     // time_func(&CND);
     // time_func(&FastCUM);
     

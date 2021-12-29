@@ -4,7 +4,7 @@
  * @brief lightning fast NormCDF function approximation,
  * Uses an approximation devised by Richards et al. (2010)
  * and bit manipulation approximations, 
- * 1 billion calculations [+-.0005] 60% faster than Nvidia's approximation found their Black-Scholes model
+ * 1 billion calculations [+-.001] 60% faster than Nvidia's approximation found their Black-Scholes model
  * 20% faster than an accurate version AccCUM
  * 
  * @param Z, Z score, must be less than 25 to prevent (long long) overflow
@@ -17,7 +17,7 @@ double CUM(double Z){
     union { double d; long long x; } u, v;             // Union bithack for approximating scaled log2 using long long representating
     u.x = (long long)( 0x3fdf127e83d16f12LL + Z );     // 0x3fdf127e83d16f12LL is an error term for the log2 approx
     v.x = (long long)( 0x3fdf127e83d16f12LL - Z );     // e^(-x/2), calculating e^x = e^(x/2) / e^(-x/2) is gives more accuracy
-    
+
     return 1. - ( 1. / ((u.d/v.d) + 1.) );             // final step of algo[2] figure 2.7 with some algebra
 }
 

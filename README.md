@@ -5,7 +5,7 @@
 The standard CDF is very important to many statistical problems, namely in any field that utilizes statistical work. Fast polynomial approximations are of interest and many approximation algorithms have been devised (Richards et al.). As a direct result implementing an efficient and accurate approximation is of interest. Additionally, I have implemented a fast inverse algorithm and an exponential algorithm. The technical write up will be in  `Tech.md`
 
 ## **"Results"**
-I have implemented an algorithm that beats the current standard CDF approximation, based on what I saw implemented by the Black-Scholes example at Nvidia, by 2x. The algorithm is defined behavior in C, will get into the technicals a bit later. The results are all within .005 accuracy (further testing necessary). My current benchmark is 1 billion iterations in .64 seconds. I have also implemented an algorithm that is 3x faster but slightly less accurate, within .01 accuracy. The inverse algorithm is slightly slower and less accurate, with further testing necessary but has been tested to be fairly accurate. 
+I have implemented an algorithm that beats the current standard CDF approximation, based on what I saw implemented by the Black-Scholes example at Nvidia, by 2x. The algorithm is defined behavior in C, will get into the technicals a bit later. The results are all within [+-.001] accuracy (further testing necessary). My current benchmark is 1 billion iterations in 3.4 seconds. I have also implemented an algorithm that is 20% faster but slightly less accurate, within +-.01 accuracy. The inverse algorithm is slightly slower and less accurate, with further testing necessary.
 
 
 ## **Motivation**
