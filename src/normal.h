@@ -5,16 +5,16 @@
 extern "C" {
 #endif
 // Function list
-static inline float FastExp(float X); 
 
 // Norm CDF
-float CUM(float Z);
-float FastCUM(float Z);
-static float CND(float d);
+double CUM(double Z);
+double AccCUM(double Z);
+double FastCUM(double Z);
+static double CND(double d);
 
 // InverseNorm
-float ICUM(float P);
-float FastICUM(float P);
+double ICUM(double P);
+double FastICUM(double P);
 
 
 

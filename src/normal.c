@@ -1,60 +1,43 @@
-#include <math.h>
-
-/**
- * @brief FastExp calculator for small values, must be small due to long overflow errors
- * Considering investigating an implementation for doubles and long long, to come soon
- * @param X, exponent
- * @return e^X
- */
-__attribute((always_inline)) static inline float FastExp(float X){         // Inline fast exponential approximation Accidentally realized i made a super fast calculator for e^x
-    union { long x; float f; } hack = { .x = X*(0xB3BC6AL) + 0x3F7A3BEAL };// Uses union bithacks, which simulate a log2 transformation,
-    return hack.f*(1 + X - (hack.x - 0x3F74FB9DL) * 8.262958405176314e-8f);// Newton iteration, using log approximation
-}                                                                          // If anyone at HRT sees this, pls hire me
+#include <math.h>                                                        
 
 /**
  * @brief lightning fast NormCDF function approximation,
  * Uses an approximation devised by Richards et al. (2010)
  * and bit manipulation approximations, 
- * 1 billion calculations [+-.005] in 6.4 seconds
+ * 1 billion calculations [+-.0005] 60% faster than Nvidia's approximation found their Black-Scholes model
+ * 20% faster than an accurate version AccCUM
  * 
- * @param Z, Z score, must be less than 20 to prevent long overflow
- * @return float Probability(z < Z)
+ * @param Z, Z score, must be less than 25 to prevent (long long) overflow
+ * @returns Probability(z < Z)
  */
 
-float CUM(float Z){
-    Z *= (1.5976F + (Z*Z)*0.070565992F);                                          // Approx defined by Richards (2010) paper algo[2]              
-    union { long x; float f; } hack = { .x = Z*(0xB3BC6AL) + 0x3F7A3BEAL };       // union bit hack, applies e^x transformation
-    float val = hack.f*(1 + Z - (hack.x - 0x3F74FB9DL) * 8.262958405176314e-8f);  // Newton iteration, constants computes log(hack.x)
-    return val/(val+1);                                                           // Last step of algorithm
+double CUM(double Z){                                     
+    Z *= (0x127054FC55A662 + 0xD07F3F8B2FCA.2P0*(Z*Z));// Approx by Richards (2010) paper algo[2], 
+                                                       // 0xB8AA3B295C17F = e^(X/2) using a bithack, value is distributed
+    union { double d; long long x; } u, v;             // Union bithack for approximating scaled log2 using long long representating
+    u.x = (long long)( 0x3fdf127e83d16f12LL + Z );     // 0x3fdf127e83d16f12LL is an error term for the log2 approx
+    v.x = (long long)( 0x3fdf127e83d16f12LL - Z );     // e^(-x/2), calculating e^x = e^(x/2) / e^(-x/2) is gives more accuracy
+    
+    return 1. - ( 1. / ((u.d/v.d) + 1.) );             // final step of algo[2] figure 2.7 with some algebra
+}
+
+double AccCUM(double Z){
+    Z *= (1.5976 + 0.070565992*(Z*Z)); // Approx defined by Richards (2010) paper algo[2]              
+    return 1. - ( 1.F / (exp(Z) + 1.) ); 
 }
 
 /**
  * @brief lightning fast normal CDF appproximation algorithm
- * beats the standard approximation 2.5x on average and CUM algo .5x
+ * beats the standard approximation 71% increase on average and CUM algo 25%
  * 
  * @param Z, Z-scoreinput must be less than 20
  * 
  */ 
-float FastCUM(float Z){
-    Z *= (1.5976F + 0.070565992F*(Z*Z));         // Approx defined by Richards (2010) paper algo[2] 
-    long hack = ((0xB3BC6AL)*Z + (0x3F7A3BEAL)); // what the fuck? jk Quake3 Q_rsqrt inspired hack to apply e^X
-    Z = *(float *) (&hack);                      // Getting back float bits as float
-    return Z/(Z+1);                              // final step of algo[2] figure 2.7
-}
-
-/**
- * @brief lightning fast inv CDF performs approximately on par with accurate CUM algorithm
- * uses paper defined in Richards et al. (2010) paper
- * @param P, area to the left, must be in range [0,1)
- * @return Z, Z-score such that P(z < Z) = P
- */ 
-float FastICUM(float P){
-    float Z = (2*P - 1); // Part of algorithm
-    union { float f; long l; } hack = { 1 - Z*Z }; // Bit hack for natural log
-    float root = (float)(hack.l - 0x3F7893F5L) * (-1.47815429977e-7F); 
-    Z=sqrtf(root);
-    if (P<.5F) return -Z; //sqrt returns only positive numbers, loses out on negatives
-    return Z;
+double FastCUM(double Z){
+    Z *= (0x127054FC55A662.P1 + 0xD07F3F8B2FCA.2P1*(Z*Z));              // Approx by Richards (2010) paper algo[2], 
+                                                                        // 0x171547652B82FE = e^X using a bithack, value is distributed
+    union  {double d; long long x;} u = {.x = Z + 0x3fef127e83d16f12LL};// union bit hack, applies e^x transformation
+    return 1. - ( 1. / (u.d + 1.) );                                    // final step of algo[2] figure 2.7
 }
 
 /**
@@ -63,20 +46,67 @@ float FastICUM(float P){
  * @param P, area to the left, must be in range [0,1)
  * @return Z, Z-score such that P(z < Z) = P
  */ 
-float ICUM(float P){
-    double Z = (2*P - 1);
+double ICUM(double P){
+    double Z = (2.*P - 1.);
     Z = log(1 - Z*Z); 
-    Z *= -1.59576912161F;
-    Z = sqrt(Z);
+    Z = sqrt(-1.59576912161 * Z);
     if (P<.5) return -Z;
     return Z;
 }
+
+/**
+ * @brief fast inv CDF performs approximately on par with accurate CUM algorithm
+ * uses paper defined in Richards et al. (2010) paper
+ * @param P, area to the left, must be in range [0,1)
+ * @return Z, Z-score such that P(z < Z) = P
+ */ 
+double FastICUM(double P){
+    double Z = (2.*P - 1.);                        // Part of algorithm
+
+    union { double d; long long x; } hack, u, v;   // hack for ln(X), u and v for e^-X
+    hack.d = (1. - Z*Z);                           // Bit hack for fast log
+
+    // Reuses properties of hack.x to quickly calculate decebt approximation e^(ln(x)) constant is adjusted for bitshift as we need half of hack.x
+    u.x = (long long)( 0x1FF7893F41E8B789LL + (hack.x>>1) );  // 0x3fdf127e83d16f12LL is an error term for the log2 approx, 
+    v.x = (long long)( 0x5FE69BBDC5BA269BLL - (hack.x>>1) );  // e^(-x/2), calculating e^x = e^(x/2) / e^(-x/2) is gives more accuracy
+        
+    Z = sqrt((hack.x - 0x400627C5E8FCF221LL) * -2.4560417421350713e-16 // Approximation of ln(X) with added constant of newton iteration
+              - 1.59576912161 * hack.d * (v.d/u.d));                   // Newton iteration multiplied by constant without the +1 term as 
+                                                                       // it's included in 0x400627C5E8FCF221LL which should be 0x3FEF127E83D16F12
+    if (P < .5F) return -Z;                                            // sqrt returns only positive numbers, loses out on negatives
+    return Z;
+}
+
+double ReadableFastICUM(double P){ // non optimized, do not use
+    double Z = (2.*P - 1.); // Part of algorithm
+
+    union { double d; long long x; } hack, u, v;   // hack for ln(X), u and v for e^-X
+    hack.d = (1. - Z*Z); // Bit hack for fast log
+    float log_approx = (hack.x - 0x3FEF127E83D16F12) / 0x171547652B82FE;
+    // 0x3FEF127E83D16F12 is an error constant that the long long<>double transformation needs for better conversions
+    // 0x171547652B82FE is the scaling factor for the log with the long long<>double transformation 
+
+    // Reuses properties of hack.x to quickly calculate decebt approximation e^(ln(x))
+    u.x = (long long)( 0x1FF7893F41E8B789LL + (hack.x>>1) );  
+    // with some algebraic manipulation we can conclude that the e^(ln(x)/2) can be written as (0x3fdf127e83d16f12LL + hack.x)/2
+    // This is because the transformation in log space is already done with the same constants, but since we are taking only X/2
+    // 0x1FF7893F41E8B789LL = 0x171547652B82FE/2
+    v.x = (long long)( 0x5FE69BBDC5BA269BLL - (hack.x>>1) );  // e^(-x/2), calculating e^x = e^(x/2) / e^(-x/2) is gives more accuracy
+    //Same concept with the algebra but we end with the constant being 3/2 * 0x1FF7893F41E8B789LL
+
+    log_approx = log_approx - (1 - hack.d * (v.d/u.d) ); // newton iteration, calculating it we get y = y - (1 - x(e^(-y))
+
+    Z = sqrt(log_approx);                   
+    if (P < .5F) return -Z;                             //sqrt returns only positive numbers, loses out on negatives
+    return Z;
+}
+
 /**
  * @brief algo used to approximate CND as used in code examples
  * by Nvidia demonstrations of CUDA. All algorithms above 
  * perform better, with some up to 2x and 2.5x faster than this.
  */ 
-float CND(float d) { //Standard algo by Nvidia
+double CND(double d) { //Standard algo by Nvidia
     const double A1 = 0.31938153;
     const double A2 = -0.356563782;
     const double A3 = 1.781477937;
@@ -84,10 +114,10 @@ float CND(float d) { //Standard algo by Nvidia
     const double A5 = 1.330274429;
     const double RSQRT2PI = 0.39894228040143267793994605993438;
 
-    float K = 1.0 / (1.0 + 0.2316419 * fabsf(d));
+    double K = 1.0 / (1.0 + 0.2316419 * fabs(d));
 
     //   double cnd=1;
-    float cnd = RSQRT2PI * exp(-0.5 * d * d) *
+    double cnd = RSQRT2PI * exp(-0.5 * d * d) *
                 (K * (A1 + K * (A2 + K * (A3 + K * (A4 + K * A5)))));
 
     if (d > 0) cnd = 1.0 - cnd;

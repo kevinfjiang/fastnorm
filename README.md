@@ -11,13 +11,12 @@ I have implemented an algorithm that beats the current standard CDF approximatio
 ## **Motivation**
 For a less serious tone, I was bored and I watched the famous Quake 3 inverse square root video and thought "I can do something like that". Boy that was a mistake. We were deriving the Black-Scholes in Probability Theory and I got the feeling that based on the CUDA implementation at Nvidia, that there had to be a better approx of NormCDF. So I set off working and here we are
 ## TODO:
-1. Speedup the inverse CDF algorithm, namely a 1 transformation solution
-2. Look into other implementations and other basic functions to speed up.
-3. Add makefile to `test/` directory
+1. Look into other implementations and other basic functions to speed up.
+2. Add makefile to `test/` directory
 
 ## **Citations**
 1. https://github.com/tpn/cuda-samples/blob/master/v9.0/4_Finance/BlackScholes/BlackScholes_gold.cpp   `Gotta go fast`
 2. Richards, Winston & Robin, s & Ashok, Sahai & Acharya, Milu. (2010). An Efficient Polynomial Approximation to the Normal Distribution Function and Its Inverse Function. Journal of Mathematics Research. 2. 10.5539/jmr.v2n4p47. `Algorithm [2] (2.7) and Inverse Algorithm [4] (2.17)`
 3. https://en.wikipedia.org/wiki/Fast_inverse_square_root 
- `bithack inspiration and constant 0x3F7A3BEAL derived here`
-5. https://github.com/ekmett/approximate/blob/master/cbits/fast.c `float logf_fast_ub(float a), grabbed constants from here for fast log approximation`
+ `bithack inspiration and newton iteration for FastICUM algorithim`
+4. https://github.com/ekmett/approximate/blob/master/cbits/fast.c `double better_exp_fast(double a), grabbed constants from here for fast exp approximation`

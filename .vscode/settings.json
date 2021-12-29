@@ -1,0 +1,12 @@
+{
+    "files.associations": {
+        "*.py": "python",
+        "*.cpp": "cpp",
+        "__locale": "c",
+        "ios": "c",
+        "complex": "c",
+        "cmath": "c",
+        "algorithm": "c",
+        "random": "c"
+    }
+}
