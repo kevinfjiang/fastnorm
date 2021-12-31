@@ -7,23 +7,23 @@
  * 1 billion calculations [+-.001] 60% faster than Nvidia's approximation found their Black-Scholes model
  * 20% faster than an accurate version AccCUM
  * 
- * @param Z, Z score, must be less than 25 to prevent (long long) overflow
+ * @param Z, Z score, abs(Z) must be less than 35 to prevent (long long) overflow
  * @returns Probability(z < Z)
  */
 
-double CUM(double Z){                                     
-    Z *= (0x127054FC55A662 + 0xD07F3F8B2FCA.2P0*(Z*Z));// Approx by Richards (2010) paper algo[2], 
-                                                       // 0xB8AA3B295C17F = e^(X/2) using a bithack, value is distributed
-    union { double d; long long x; } u, v;             // Union bithack for approximating scaled log2 using long long representating
-    u.x = (long long)( 0x3fdf127e83d16f12LL + Z );     // 0x3fdf127e83d16f12LL is an error term for the log2 approx
-    v.x = (long long)( 0x3fdf127e83d16f12LL - Z );     // e^(-x/2), calculating e^x = e^(x/2) / e^(-x/2) is gives more accuracy
+double CUM(double Z){                                
+    Z *= (0x127054FC55A662P0 + 0xD07F3F8B2FCA.2P0*(Z*Z));// Approx by Richards (2010) paper algo[2], 
+                                                         // 0xB8AA3B295C17F = e^(X/2) using a bithack, value is distributed
+    union { double d; unsigned long long x; } u, v;      // Union bithack for approximating scaled log2 using long long representating
+    u.x = ( 0x3fdf127e83d16f12ULL + Z );                 // 0x3fdf127e83d16f12ULL is an error term for the log2 approx
+    v.x = ( 0x3fdf127e83d16f12ULL - Z );                 // e^(-x/2), calculating e^x = e^(x/2) / e^(-x/2) is gives more accuracy
 
-    return 1. - ( 1. / ((u.d/v.d) + 1.) );             // final step of algo[2] figure 2.7 with some algebra
+    return 1.0 / ((v.d/u.d) + 1.0);                      // final step of algo[2] figure 2.7 with some algebra
 }
 
 double AccCUM(double Z){
     Z *= (1.5976 + 0.070565992*(Z*Z)); // Approx defined by Richards (2010) paper algo[2]              
-    return 1. - ( 1.F / (exp(Z) + 1.) ); 
+    return 1. - ( 1. / (exp(Z) + 1.) ); 
 }
 
 /**
@@ -34,10 +34,10 @@ double AccCUM(double Z){
  * 
  */ 
 double FastCUM(double Z){
-    Z *= (0x127054FC55A662.P1 + 0xD07F3F8B2FCA.2P1*(Z*Z));              // Approx by Richards (2010) paper algo[2], 
-                                                                        // 0x171547652B82FE = e^X using a bithack, value is distributed
-    union  {double d; long long x;} u = {.x = Z + 0x3fef127e83d16f12LL};// union bit hack, applies e^x transformation
-    return 1. - ( 1. / (u.d + 1.) );                                    // final step of algo[2] figure 2.7
+    Z *= (0x127054FC55A662.P1 + 0xD07F3F8B2FCA.2P1*(Z*Z));                       // Approx by Richards (2010) paper algo[2], 
+                                                                                 // 0x171547652B82FE = e^X using a bithack, value is distributed
+    union  {double d; unsigned long long x;} u = {.x = Z + 0x3fef127e83d16f12ULL};// union bit hack, applies e^x transformation
+    return 1. - ( 1. / (u.d + 1.) );                                              // final step of algo[2] figure 2.7
 }
 
 /**
@@ -70,7 +70,7 @@ double FastICUM(double P){
     u.x = (long long)( 0x1FF7893F41E8B789LL + (hack.x>>1) );  // 0x3fdf127e83d16f12LL is an error term for the log2 approx, 
     v.x = (long long)( 0x5FE69BBDC5BA269BLL - (hack.x>>1) );  // e^(-x/2), calculating e^x = e^(x/2) / e^(-x/2) is gives more accuracy
         
-    Z = sqrt((hack.x - 0x400627C5E8FCF221LL) * -2.4560417421350713e-16 // Approximation of ln(X) with added constant of newton iteration
+    Z = sqrt((hack.x - 0x400627C5E8FCF221) * -2.4560417421350713e-16   // Approximation of ln(X) with added newton iteration
               - 1.59576912161 * hack.d * (v.d/u.d));                   // Newton iteration multiplied by constant without the +1 term as 
                                                                        // it's included in 0x400627C5E8FCF221LL which should be 0x3FEF127E83D16F12
     if (P < .5F) return -Z;                                            // sqrt returns only positive numbers, loses out on negatives
@@ -116,7 +116,6 @@ double CND(double d) { //Standard algo by Nvidia
 
     double K = 1.0 / (1.0 + 0.2316419 * fabs(d));
 
-    //   double cnd=1;
     double cnd = RSQRT2PI * exp(-0.5 * d * d) *
                 (K * (A1 + K * (A2 + K * (A3 + K * (A4 + K * A5)))));
 

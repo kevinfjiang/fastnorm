@@ -11,16 +11,15 @@
 #ifdef INPUT
     #define INP INPUT
 #else
-    #define INP .6
+    #define INP .3
 #endif //COUNT
 
 
 
 void time_func(double (*foo)(double)){
-    clock_t t = clock();
-    t =  clock();
     double inp = (double) INP;
     double out;
+    clock_t t = clock();
     for (unsigned long i=0; i<CT; i++){
         out = (*foo)(inp);
     }
@@ -34,10 +33,9 @@ void time_func(double (*foo)(double)){
 int main(){
     printf("MY algo \n");
     time_func(&CUM);
-    time_func(&FastCUM);
-    time_func(&AccCUM);
+    time_func(&CND);
+    // time_func(&AccCUM);
     // time_func(&CND);
     // time_func(&FastCUM);
-    
     // time_func(&AccCUM);
 }
